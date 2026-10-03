@@ -45,7 +45,7 @@ def chat(data: dict):
         return {"reply": res.text, "intent": intent, "confidence": round(conf, 2)}
     except Exception as e:
         return {"reply": f"Error: {e}"}
-    @app.get("/insights")
+@app.get("/insights")
 def insights(income: float = 0):
     s = tracker.summary(income)
     try:
