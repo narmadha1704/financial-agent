@@ -27,7 +27,10 @@ query("CREATE TABLE IF NOT EXISTS chats (id INT AUTO_INCREMENT PRIMARY KEY, mess
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
-
+import tracker
+tracker.query = query
+tracker.init()
+app.include_router(tracker.router)
 @app.post("/chat")
 def chat(data: dict):
     intent, conf = detect_intent(data["message"])
@@ -42,3 +45,13 @@ def chat(data: dict):
         return {"reply": res.text, "intent": intent, "confidence": round(conf, 2)}
     except Exception as e:
         return {"reply": f"Error: {e}"}
+    @app.get("/insights")
+def insights(income: float = 0):
+    s = tracker.summary(income)
+    try:
+        res = client.models.generate_content(
+            model=MODEL, config=types.GenerateContentConfig(system_instruction=SYSTEM),
+            contents=f"Analyse my spending data. Give 4 short insights and 3 actions. Data: {s}")
+        return {"insights": res.text}
+    except Exception as e:
+        return {"insights": f"Error: {e}"}

@@ -1,3 +1,5 @@
 backend/.env
 backend/chat.db
 __pycache__/
+backend/data/
+backend/backups/

@@ -8,7 +8,9 @@
 </head>
 <body>
   <div class="chat">
-    <header>💰 AI Financial Planning Agent <button id="clear" type="button">Clear</button></header>
+    <header>💰 AI Financial Planning Agent   
+      <a href="dashboard.html" style="color:#fff">📊 Dashboard</a> <button id="clear" type="button">Clear</button>
+    </header>
     <div id="messages"></div>
     <form id="form">
       <input id="input" placeholder="Ask about budgeting, savings, investments..." autocomplete="off" required>
@@ -24,8 +26,15 @@
     <button id="draw" type="button">Show chart</button>
     <canvas id="chart"></canvas>
     <button id="ask" type="button">Ask agent about this</button>
+    <h3>Savings Growth</h3>
+    <input id="sip" type="number" placeholder="Monthly savings (₹)">
+    <input id="rate" type="number" placeholder="Return % per year" value="12">
+    <input id="years" type="number" placeholder="Years" value="10">
+    <button id="grow" type="button">Show growth</button>
+    <div id="growth"></div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min"></script>
   <script src="script.js"></script>
 </body>
 </html>

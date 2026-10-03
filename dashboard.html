@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Financial Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { display: block; }
+    .page { max-width: 900px; margin: auto; padding: 15px; background: #fff; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+    .alert { background: #fde8e8; padding: 8px; margin: 6px 0; }
+    @media print { button, input, a { display: none; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a href="index.html">← Back to chat</a>
+    <h2>Financial Dashboard</h2>
+    <div id="alerts"></div>
+    <div class="row"><input id="desc" placeholder="Expense e.g. Swiggy dinner"><input id="amt" type="number" placeholder="₹"><button id="add">Add expense</button></div>
+    <div class="row"><input id="income" type="number" placeholder="Monthly income (₹)"><button id="refresh">Update</button><button onclick="print()">Download report</button></div>
+        <div class="row">
+      <button id="insights">AI insights</button><button id="retrain">Retrain model</button><button id="backup">Backup data</button>
+      <label>Import bank CSV: <input type="file" id="csv" accept=".csv"></label>
+    </div>
+    <div id="insightbox"></div>
+    <div id="status"></div>
+    <div id="budget"></div>
+    <div class="row"><div id="cat"></div><div id="month"></div></div>
+    <h3>Recent expenses</h3><ul id="recent"></ul>
+    <h3>Goals</h3>
+    <div class="row"><input id="gname" placeholder="Goal e.g. Laptop"><input id="gtarget" type="number" placeholder="Target ₹"><button id="gadd">Add goal</button></div>
+    <div id="goals"></div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>
