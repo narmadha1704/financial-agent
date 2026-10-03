@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Financial Planning Agent</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="chat">
+    <header>💰 AI Financial Planning Agent <button id="clear" type="button">Clear</button></header>
+    <div id="messages"></div>
+    <form id="form">
+      <input id="input" placeholder="Ask about budgeting, savings, investments..." autocomplete="off" required>
+      <button>Send</button>
+    </form>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <div class="planner">
+    <h3>Budget Chart</h3>
+    <input id="income" type="number" placeholder="Monthly income (₹)">
+    <input id="needs" type="number" placeholder="Needs: rent, food, bills (₹)">
+    <input id="wants" type="number" placeholder="Wants: fun, shopping (₹)">
+    <button id="draw" type="button">Show chart</button>
+    <canvas id="chart"></canvas>
+    <button id="ask" type="button">Ask agent about this</button>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
