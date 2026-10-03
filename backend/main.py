@@ -1,4 +1,5 @@
 import os
+import pymysql
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,10 +14,17 @@ SYSTEM = ("You are a financial planning assistant for users in India. Use rupees
           "says otherwise. Help with budgeting, saving, investing basics and goal planning. "
           "Give clear, practical steps and keep answers short. You are not a licensed advisor.")
 
+def query(sql, args=()):
+    db = pymysql.connect(host=os.getenv("DB_HOST", "localhost"), user=os.getenv("DB_USER", "root"),
+                         password=os.getenv("DB_PASSWORD", ""), database=os.getenv("DB_NAME", "financial_agent"),
+                         autocommit=True)
+    with db, db.cursor() as cur:
+        cur.execute(sql, args)
+        return cur.fetchall()
+
+query("CREATE TABLE IF NOT EXISTS chats (id INT AUTO_INCREMENT PRIMARY KEY, message TEXT, reply TEXT, time TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
+
 app = FastAPI()
-import sqlite3
-db = sqlite3.connect("chat.db", check_same_thread=False)
-db.execute("CREATE TABLE IF NOT EXISTS chats (id INTEGER PRIMARY KEY AUTOINCREMENT, message TEXT, reply TEXT, time TEXT DEFAULT CURRENT_TIMESTAMP)")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 @app.post("/chat")
@@ -28,13 +36,12 @@ def chat(data: dict):
         res = client.models.generate_content(
             model=MODEL, contents=contents,
             config=types.GenerateContentConfig(system_instruction=SYSTEM))
-        db.execute("INSERT INTO chats (message, reply) VALUES (?, ?)", (data["message"], res.text))
-        db.commit()
+        query("INSERT INTO chats (message, reply) VALUES (%s, %s)", (data["message"], res.text))
         return {"reply": res.text}
     except Exception as e:
         return {"reply": f"Error: {e}"}
 
 @app.get("/history")
 def get_history():
-    rows = db.execute("SELECT message, reply, time FROM chats ORDER BY id DESC")
+    rows = query("SELECT message, reply, time FROM chats ORDER BY id DESC")
     return [dict(zip(("message", "reply", "time"), r)) for r in rows]
