@@ -1,3 +1,4 @@
+from nlp import detect_intent
 import os
 import pymysql
 from dotenv import load_dotenv
@@ -29,19 +30,15 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 
 @app.post("/chat")
 def chat(data: dict):
+    intent, conf = detect_intent(data["message"])
     contents = [types.Content(role=h["role"], parts=[types.Part(text=h["text"])])
                 for h in data.get("history", [])]
     contents.append(types.Content(role="user", parts=[types.Part(text=data["message"])]))
     try:
         res = client.models.generate_content(
             model=MODEL, contents=contents,
-            config=types.GenerateContentConfig(system_instruction=SYSTEM))
+            config=types.GenerateContentConfig(system_instruction=f"{SYSTEM} The user's question is about: {intent}."))
         query("INSERT INTO chats (message, reply) VALUES (%s, %s)", (data["message"], res.text))
-        return {"reply": res.text}
+        return {"reply": res.text, "intent": intent, "confidence": round(conf, 2)}
     except Exception as e:
         return {"reply": f"Error: {e}"}
-
-@app.get("/history")
-def get_history():
-    rows = query("SELECT message, reply, time FROM chats ORDER BY id DESC")
-    return [dict(zip(("message", "reply", "time"), r)) for r in rows]

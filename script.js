@@ -24,8 +24,8 @@ $("form").onsubmit = async e => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message, history }),
     });
-    const { reply } = await res.json();
-    loading.innerHTML = marked.parse(reply);
+    const { reply, intent } = await res.json();
+    loading.innerHTML = marked.parse(reply) + (intent ? `<small>Topic: ${intent}</small>` : "");
     history.push({ role: "user", text: message }, { role: "model", text: reply });
   } catch {
     loading.textContent = "(Demo mode: backend not connected yet) You asked: " + message;
