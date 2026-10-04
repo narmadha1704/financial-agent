@@ -22,22 +22,47 @@ def add_expense(d: dict):
     query("INSERT INTO expenses (description, amount, category) VALUES (%s, %s, %s)", (d["description"], amt, cat))
     return {"category": cat, "alert": alert}
 
+def behavior(df):
+    d = pd.to_datetime(df.created)
+    by_cat = df.groupby("category").amount.sum()
+    by_month = df.groupby(d.dt.strftime("%Y-%m")).amount.sum()
+    big = df.loc[df.amount.idxmax()]
+    seen = df.assign(m=d.dt.strftime("%Y-%m"), k=df.description.str.lower().str.strip()).groupby("k").m.nunique()
+    trend = round(float((by_month.iloc[-1] - by_month.iloc[-2]) / by_month.iloc[-2] * 100)) if len(by_month) > 1 else None
+    return {
+        "top_category": str(by_cat.idxmax()), "top_share": int(round(100 * by_cat.max() / by_cat.sum())),
+        "busiest_day": str(df.groupby(d.dt.day_name()).amount.sum().idxmax()),
+        "average_expense": round(float(df.amount.mean())),
+        "biggest": f"{big.description} (₹{big.amount:.0f})",
+        "recurring": seen[seen > 1].index.tolist(),
+        "month_trend_percent": trend,
+    }
+
+def plan(income, needs):
+    if not needs:
+        return {"needs": income * .5, "wants": income * .3, "savings": income * .2}
+    n = min(max(needs * 1.1, income * .3), income * .7)
+    w = min(income * .3, max(income - n - income * .1, 0))
+    return {"needs": round(n), "wants": round(w), "savings": round(income - n - w)}
+
 @router.get("/summary")
 def summary(income: float = 0):
     df = pd.DataFrame(query("SELECT id, description, amount, category, created FROM expenses"),
                       columns=["id", "description", "amount", "category", "created"])
     if df.empty:
-        return {"total": 0, "by_category": {}, "by_month": {}, "budget": None, "recent": []}
+        return {"total": 0, "by_category": {}, "by_month": {}, "budget": None, "behavior": None, "recent": []}
     df["amount"] = df.amount.astype(float)
     os.makedirs("data", exist_ok=True)
     df.to_csv("data/processed_expenses.csv", index=False)
-    total, needs = df.amount.sum(), df[df.category.isin(NEEDS)].amount.sum()
+    month = df[pd.to_datetime(df.created).dt.strftime("%Y-%m") == datetime.now().strftime("%Y-%m")]
+    spent, needs = float(month.amount.sum()), float(month[month.category.isin(NEEDS)].amount.sum())
     return {
-        "total": total,
+        "total": float(df.amount.sum()),
         "by_category": df.groupby("category").amount.sum().round(0).to_dict(),
         "by_month": df.groupby(pd.to_datetime(df.created).dt.strftime("%Y-%m")).amount.sum().round(0).to_dict(),
-        "budget": {"needs_spent": needs, "wants_spent": total - needs, "savings": income - total,
-                   "plan": {"needs": income * .5, "wants": income * .3, "savings": income * .2}} if income else None,
+        "budget": {"needs_spent": needs, "wants_spent": spent - needs, "savings": income - spent,
+                   "plan": plan(income, needs)} if income else None,
+        "behavior": behavior(df),
         "recent": df.tail(5)[["id", "description", "amount", "category"]].to_dict("records"),
     }
 

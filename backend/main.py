@@ -31,6 +31,14 @@ import tracker
 tracker.query = query
 tracker.init()
 app.include_router(tracker.router)
+def finance_context(income):
+    s = tracker.summary(income)
+    goals = "; ".join(f"{g['name']} {g['saved']}/{g['target']}" for g in tracker.goals()) or "none"
+    inc = f"₹{income:.0f}" if income else "not provided"
+    return (f" The user's real data, so use these numbers when relevant: monthly income {inc}; "
+            f"spending summary {s}; savings goals: {goals}. If there is no data yet, "
+            "suggest adding expenses on the dashboard.")
+
 @app.post("/chat")
 def chat(data: dict):
     intent, conf = detect_intent(data["message"])
@@ -38,9 +46,10 @@ def chat(data: dict):
                 for h in data.get("history", [])]
     contents.append(types.Content(role="user", parts=[types.Part(text=data["message"])]))
     try:
+        system = f"{SYSTEM} The user's question is about: {intent}.{finance_context(float(data.get('income') or 0))}"
         res = client.models.generate_content(
             model=MODEL, contents=contents,
-            config=types.GenerateContentConfig(system_instruction=f"{SYSTEM} The user's question is about: {intent}."))
+            config=types.GenerateContentConfig(system_instruction=system))
         query("INSERT INTO chats (message, reply) VALUES (%s, %s)", (data["message"], res.text))
         return {"reply": res.text, "intent": intent, "confidence": round(conf, 2)}
     except Exception as e:
