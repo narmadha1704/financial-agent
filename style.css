@@ -58,3 +58,25 @@ button:hover { background: #1558b0; }
   body { background: #fff; padding: 0; }
   .page { box-shadow: none; }
 }
+/* goal progress bar */
+.goal { margin: 10px 0; padding: 14px; background: #f9fafb; border-radius: 12px; display: flex; flex-direction: column; gap: 8px; }
+.bar { height: 10px; background: #e5e7eb; border-radius: 999px; overflow: hidden; }
+.bar div { height: 100%; background: linear-gradient(90deg, #16a34a, #4ade80); border-radius: 999px; transition: width .4s; }
+.goal button { align-self: flex-start; }
+
+/* typing animation */
+.typing::after { content: ""; animation: dots 1.2s steps(4) infinite; }
+@keyframes dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75%, 100% { content: "..."; } }
+
+/* dark mode */
+#theme { position: fixed; bottom: 16px; right: 16px; width: 44px; height: 44px; padding: 0; border-radius: 50%; font-size: 20px; box-shadow: var(--shadow); }
+body.dark { --text: #e5e7eb; --muted: #9ca3af; --border: #374151; background: #0f172a; }
+body.dark .chat, body.dark .planner, body.dark .page, body.dark form { background: #1e293b; }
+body.dark #messages, body.dark #budget, body.dark #insightbox, body.dark .goal { background: #0f172a; }
+body.dark .bot { background: #1e293b; border-color: #374151; }
+body.dark input, body.dark select { background: #0f172a; color: #e5e7eb; }
+body.dark .alert { background: #450a0a; color: #fecaca; }
+input[type=file] { flex: none; min-width: 0; padding: 6px 10px; }
+#behavior { margin: 12px 0; padding: 14px; background: #faf5ff; border-radius: 12px; line-height: 1.6; }
+#behavior:empty { display: none; }
+body.dark #behavior { background: #0f172a; }

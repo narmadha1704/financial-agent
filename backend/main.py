@@ -1,6 +1,8 @@
 from nlp import detect_intent
 import os
 import pymysql
+import numpy as np
+import pandas as pd
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -64,3 +66,11 @@ def insights(income: float = 0):
         return {"insights": res.text}
     except Exception as e:
         return {"insights": f"Error: {e}"}
+@app.get("/projection")
+def projection(monthly: float, rate: float = 12, years: int = 10):
+    m = np.arange(1, years * 12 + 1)
+    r = rate / 1200
+    value = monthly * (((1 + r) ** m - 1) / r) * (1 + r) if r else monthly * m
+    df = pd.DataFrame({"month": m, "invested": monthly * m, "value": value.round(0)})
+    yearly = df[df.month % 12 == 0]
+    return {"years": (yearly.month // 12).tolist(), "invested": yearly.invested.tolist(), "value": yearly.value.tolist()}
